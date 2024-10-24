@@ -36,6 +36,11 @@ x-shared-env: &shared-api-worker-env
   SQLALCHEMY_POOL_SIZE: ${SQLALCHEMY_POOL_SIZE:-30}
   SQLALCHEMY_POOL_RECYCLE: ${SQLALCHEMY_POOL_RECYCLE:-3600}
   SQLALCHEMY_ECHO: ${SQLALCHEMY_ECHO:-false}
+  COUCHBASE_CONNECTION_STRING: ${COUCHBASE_CONNECTION_STRING:-'couchbase-server'}
+  COUCHBASE_USER: ${COUCHBASE_USER:-Administrator}
+  COUCHBASE_PASSWORD: ${COUCHBASE_PASSWORD:-password}
+  COUCHBASE_BUCKET_NAME: ${COUCHBASE_BUCKET_NAME:-Embeddings}
+  COUCHBASE_SCOPE_NAME: ${COUCHBASE_SCOPE_NAME:-_default}
   REDIS_HOST: ${REDIS_HOST:-redis}
   REDIS_PORT: ${REDIS_PORT:-6379}
   REDIS_USERNAME: ${REDIS_USERNAME:-}
@@ -227,7 +232,8 @@ x-shared-env: &shared-api-worker-env
 services:
   # API service
   api:
-    image: langgenius/dify-api:0.9.2
+    #image: langgenius/dify-api:0.9.2
+    image: willy/dify-api:0.9.2
     restart: always
     environment:
       # Use the shared environment variables.
@@ -247,7 +253,8 @@ services:
   # worker service
   # The Celery worker for processing the queue.
   worker:
-    image: langgenius/dify-api:0.9.2
+    #image: langgenius/dify-api:0.9.2
+    image: willy/dify-api:0.9.2
     restart: always
     environment:
       # Use the shared environment variables.
@@ -424,6 +431,32 @@ services:
       - '${EXPOSE_NGINX_PORT:-80}:${NGINX_PORT:-80}'
       - '${EXPOSE_NGINX_SSL_PORT:-443}:${NGINX_SSL_PORT:-443}'
 
+  couchbase-server:
+    build: ./couchbase-server
+    ports:
+     - 8091:8091
+    profiles:
+      - couchbase
+    restart: always
+    environment:
+      - CLUSTER_NAME=dify_search
+      - COUCHBASE_ADMINISTRATOR_USERNAME=${COUCHBASE_USER:-Administrator}
+      - COUCHBASE_ADMINISTRATOR_PASSWORD=${COUCHBASE_PASSWORD:-password}
+      - COUCHBASE_BUCKET=${COUCHBASE_BUCKET_NAME:-Embeddings}
+      - COUCHBASE_BUCKET_RAMSIZE=512
+      - COUCHBASE_RAM_SIZE=2048
+      - COUCHBASE_EVENTING_RAM_SIZE=512
+      - COUCHBASE_INDEX_RAM_SIZE=512
+      - COUCHBASE_FTS_RAM_SIZE=1024
+    hostname: couchbase-server
+    container_name: couchbase-server
+    working_dir: /opt/couchbase
+    stdin_open: true
+    tty: true
+    entrypoint: [""]
+    command: sh -c "/opt/couchbase/init/init-cbserver.sh"
+    volumes:
+      - ./volumes/couchbase/data:/opt/couchbase/var/lib/couchbase/data
   # The Weaviate vector store.
   weaviate:
     image: semitechnologies/weaviate:1.19.0

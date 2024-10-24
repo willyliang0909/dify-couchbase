@@ -111,6 +111,10 @@ class Vector:
                 from core.rag.datasource.vdb.vikingdb.vikingdb_vector import VikingDBVectorFactory
 
                 return VikingDBVectorFactory
+            case VectorType.COUCHBASE:
+                from core.rag.datasource.vdb.couchbase.couchbase_vector import CouchbaseVectorFactory
+
+                return CouchbaseVectorFactory
             case _:
                 raise ValueError(f"Vector store {vector_type} is not supported.")
 

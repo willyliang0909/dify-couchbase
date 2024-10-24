@@ -629,6 +629,7 @@ class DatasetRetrievalSettingApi(Resource):
                 | VectorType.MYSCALE
                 | VectorType.ORACLE
                 | VectorType.ELASTICSEARCH
+                | VectorType.COUCHBASE
                 | VectorType.PGVECTOR
             ):
                 return {
@@ -667,6 +668,7 @@ class DatasetRetrievalSettingMockApi(Resource):
                 | VectorType.MYSCALE
                 | VectorType.ORACLE
                 | VectorType.ELASTICSEARCH
+                | VectorType.COUCHBASE
                 | VectorType.PGVECTOR
             ):
                 return {
